@@ -19,13 +19,23 @@
       const url = document.getElementById('url').value;
       const output = document.getElementById('output');
       output.innerHTML = "Loading...";
-      const workerUrl = 'https://video-downloader-api.TERA-NAME.workers.dev';
-      const res = await fetch(`${workerUrl}?url=${encodeURIComponent(url)}`);
-      const data = await res.json();
-      if(data.url) {
-        output.innerHTML = `<a href="${data.url}" target="_blank">Download Link</a>`;
-      } else {
-        output.innerHTML = "Error: " + (data.text || "Kuch galat ho gaya");
+      
+      // PythonAnywhere ka backend URL
+      const backendUrl = 'https://asshumalik.pythonanywhere.com';
+      
+      try {
+        // Agar tere backend me /api/info endpoint hai
+        const res = await fetch(`${backendUrl}/api/info?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        
+        if(data.url || data.formats) {
+          // YT-DLP usually formats ki list deta hai
+          output.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } else {
+          output.innerHTML = "Error: " + (data.error || "Kuch galat ho gaya");
+        }
+      } catch(err) {
+        output.innerHTML = "Error: " + err.message;
       }
     }
   </script>
