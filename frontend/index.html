@@ -4,38 +4,129 @@
   <title>Video Downloader</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; }
-    input, button { width: 100%; padding: 14px; margin: 8px 0; box-sizing: border-box; }
-    button { background: #f48120; color: white; border: none; font-size: 16px; cursor: pointer; }
+    body { 
+      font-family: sans-serif; 
+      max-width: 500px; 
+      margin: 40px auto; 
+      padding: 20px; 
+      background: #f5f5f5;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    input, button { 
+      width: 100%; 
+      padding: 14px; 
+      margin: 8px 0; 
+      box-sizing: border-box; 
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+    }
+    button { 
+      background: #f48120; 
+      color: white; 
+      border: none; 
+      font-weight: bold;
+      cursor: pointer; 
+    }
+    button:hover {
+      background: #e0701a;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      word-wrap: break-word;
+    }
+    .error {
+      color: #d32f2f;
+    }
+    .success {
+      color: #388e3c;
+    }
+    pre {
+      white-space: pre-wrap;
+      font-size: 12px;
+    }
+    a.download-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <h2>Video Downloader</h2>
-  <input type="text" id="url" placeholder="Video link paste karo">
-  <button onclick="download()">Download Karo</button>
+  <input type="text" id="url" placeholder="YouTube/Instagram link paste karo">
+  <button id="downloadBtn" onclick="download()">Download Karo</button>
   <div id="output"></div>
+
   <script>
     async function download() {
-      const url = document.getElementById('url').value;
+      const url = document.getElementById('url').value.trim();
       const output = document.getElementById('output');
-      output.innerHTML = "Loading...";
+      const btn = document.getElementById('downloadBtn');
+      
+      if (!url) {
+        output.innerHTML = '<p class="error">Pehle link daalo bhai!</p>';
+        return;
+      }
+
+      output.innerHTML = "Loading... Video ki info nikaal rahe hain ⏳";
+      btn.disabled = true;
       
       // PythonAnywhere ka backend URL
       const backendUrl = 'https://asshumalik.pythonanywhere.com';
       
       try {
-        // Agar tere backend me /api/info endpoint hai
-        const res = await fetch(`${backendUrl}/api/info?url=${encodeURIComponent(url)}`);
+        // Backend me / route use kar rahe hain, /api/info nahi
+        const res = await fetch(`${backendUrl}/?url=${encodeURIComponent(url)}`);
+        
+        if (!res.ok) {
+          throw new Error(`Server error: ${res.status}`);
+        }
+        
         const data = await res.json();
         
-        if(data.url || data.formats) {
-          // YT-DLP usually formats ki list deta hai
-          output.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        // Backend se kya response aa raha hai us hisaab se dikhao
+        if (data.error) {
+          output.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+        } else if (data.url) {
+          output.innerHTML = `
+            <p class="success">Video mil gaya! ✅</p>
+            <p><strong>Title:</strong> ${data.title || 'N/A'}</p>
+            <a href="${data.url}" target="_blank" class="download-btn">Download Link</a>
+          `;
+        } else if (data.formats) {
+          // Agar formats ki list aa rahi hai
+          let links = '<p class="success">Download Options:</p>';
+          data.formats.slice(0, 3).forEach(f => {
+            if (f.url) {
+              links += `<a href="${f.url}" target="_blank" class="download-btn">${f.format_note || f.ext}</a><br>`;
+            }
+          });
+          output.innerHTML = links;
         } else {
-          output.innerHTML = "Error: " + (data.error || "Kuch galat ho gaya");
+          // Raw JSON dikha do
+          output.innerHTML = `<p class="success">Response:</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
         }
+        
       } catch(err) {
-        output.innerHTML = "Error: " + err.message;
+        console.error(err);
+        output.innerHTML = `<p class="error">Error: ${err.message}<br><br>CORS ya Network issue ho sakta hai. Backend me CORS(app) laga hai na?</p>`;
+      } finally {
+        btn.disabled = false;
       }
     }
   </script>
