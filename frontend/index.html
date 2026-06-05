@@ -3,16 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Social Media Video Downloader</title>
+    <title>📥 Social Media Video Downloader</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
@@ -20,7 +15,6 @@
             align-items: center;
             padding: 20px;
         }
-        
         .container {
             background: white;
             border-radius: 20px;
@@ -29,17 +23,8 @@
             width: 100%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-        }
-        
+        h1 { color: #333; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
         input {
             width: 100%;
             padding: 15px;
@@ -47,14 +32,7 @@
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             margin-bottom: 15px;
-            transition: all 0.3s;
         }
-        
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
         button {
             width: 100%;
             padding: 15px;
@@ -64,77 +42,44 @@
             border-radius: 10px;
             font-size: 16px;
             cursor: pointer;
-            transition: transform 0.2s;
+            font-weight: bold;
         }
-        
-        button:hover {
-            transform: translateY(-2px);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
         .status {
             margin-top: 20px;
-            padding: 10px;
+            padding: 12px;
             border-radius: 10px;
             text-align: center;
         }
-        
-        .status.loading {
-            background: #f0f0f0;
-            color: #666;
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .result {
-            margin-top: 20px;
-            text-align: center;
-        }
-        
+        .status.loading { background: #f0f0f0; color: #666; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
         .download-btn {
             display: inline-block;
-            padding: 15px 30px;
+            padding: 12px 24px;
             background: #28a745;
             color: white;
             text-decoration: none;
-            border-radius: 10px;
-            font-size: 18px;
-            margin-top: 10px;
-            transition: background 0.3s;
+            border-radius: 8px;
+            margin-top: 15px;
         }
-        
-        .download-btn:hover {
-            background: #218838;
-        }
-        
         .debug {
             margin-top: 20px;
             padding: 15px;
             background: #f8f9fa;
             border-radius: 10px;
             font-size: 12px;
-            overflow-x: auto;
             display: none;
+            overflow-x: auto;
         }
-        
-        .debug.show {
-            display: block;
-        }
-        
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
+        .debug.show { display: block; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        .note {
+            margin-top: 20px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #856404;
         }
     </style>
 </head>
@@ -151,9 +96,17 @@
         
         <button onclick="toggleDebug()" style="background: #6c757d; margin-top: 10px;">🐛 Debug Info</button>
         <div id="debug" class="debug"></div>
+        
+        <div class="note">
+            💡 <strong>Note:</strong> Agar download kaam nahi kar raha, toh RapidAPI par free subscribe karein:<br>
+            <a href="https://rapidapi.com/" target="_blank">rapidapi.com</a> → Search "instagram downloader" → Subscribe (Free)
+        </div>
     </div>
 
     <script>
+        // ⚠️ IMPORTANT: Yahan apna Render backend URL daalein
+        const BACKEND_URL = "https://video-downloader-g5bz.onrender.com";
+        
         async function downloadVideo() {
             const url = document.getElementById("urlInput").value.trim();
             const statusDiv = document.getElementById("status");
@@ -165,48 +118,43 @@
                 return;
             }
             
-            showStatus("⏳ Processing your video...", "loading");
+            showStatus("⏳ Processing...", "loading");
             resultDiv.innerHTML = "";
             debugDiv.innerHTML = "";
             debugDiv.classList.remove("show");
             
             try {
-                const response = await fetch("https://video-downloader-g5bz.onrender.com/download", {
+                const response = await fetch(`${BACKEND_URL}/download`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ url: url })
                 });
                 
                 const data = await response.json();
-                console.log("Full Response:", data);
+                console.log("Response:", data);
                 
-                // Debug ke liye full response store
-                debugDiv.innerHTML = "<strong>🔍 API Response:</strong><pre>" + JSON.stringify(data, null, 2) + "</pre>";
+                debugDiv.innerHTML = "<strong>🔍 Full Response:</strong><pre>" + JSON.stringify(data, null, 2) + "</pre>";
                 
                 if (data.success && data.video_url) {
-                    showStatus("✅ Video ready! Click below to download", "success");
+                    showStatus("✅ Video ready! Click to download", "success");
                     resultDiv.innerHTML = `
                         <a href="${data.video_url}" target="_blank" class="download-btn" download>
-                            ⬇️ Download Video
+                            ⬇️ Download Video (${data.source || 'API'})
                         </a>
                     `;
                 } 
                 else if (data.video_url) {
-                    showStatus("✅ Video ready!", "success");
-                    resultDiv.innerHTML = `
-                        <a href="${data.video_url}" target="_blank" class="download-btn">
-                            ⬇️ Download Video
-                        </a>
-                    `;
+                    showStatus("✅ Success!", "success");
+                    resultDiv.innerHTML = `<a href="${data.video_url}" target="_blank" class="download-btn">⬇️ Download</a>`;
                 }
                 else {
-                    showStatus("❌ Could not extract video link. Check Debug Info below", "error");
+                    showStatus("❌ " + (data.error || "Video link nahi mila"), "error");
                     debugDiv.classList.add("show");
                 }
                 
             } catch (err) {
                 showStatus("❌ Network Error: " + err.message, "error");
-                debugDiv.innerHTML = "<strong>Error:</strong> " + err.message;
+                debugDiv.innerHTML = "<strong>Error:</strong> " + err.message + "<br><br>Check if backend is running!";
                 debugDiv.classList.add("show");
             }
         }
@@ -218,8 +166,7 @@
         }
         
         function toggleDebug() {
-            const debugDiv = document.getElementById("debug");
-            debugDiv.classList.toggle("show");
+            document.getElementById("debug").classList.toggle("show");
         }
         
         // Enter key support
@@ -228,4 +175,4 @@
         });
     </script>
 </body>
-    </html>
+</html>
