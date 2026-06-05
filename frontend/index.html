@@ -19,7 +19,7 @@
             background: white;
             border-radius: 20px;
             padding: 40px;
-            max-width: 600px;
+            max-width: 650px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
@@ -78,6 +78,15 @@
             font-weight: bold;
             font-size: 18px;
         }
+        .platform-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #e7f3ff;
+            color: #004085;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
         .info {
             margin-top: 20px;
             padding: 15px;
@@ -90,9 +99,9 @@
 </head>
 <body>
     <div class="container">
-        <div class="badge">✨ 100% FREE • NO API KEY NEEDED</div>
+        <div class="badge">✨ 100% FREE • NO API KEY • NO SUBSCRIPTION</div>
         <h1>📥 Social Media Downloader</h1>
-        <div class="subtitle">Instagram • YouTube • Facebook • Twitter • TikTok</div>
+        <div class="subtitle">Instagram • YouTube • Twitter • TikTok • Facebook</div>
         
         <input type="text" id="urlInput" placeholder="Paste video link here...">
         <button onclick="downloadVideo()">✨ Get Download Link</button>
@@ -102,9 +111,10 @@
         
         <div class="info">
             💡 <strong>Kaise use karein:</strong><br>
-            1. Instagram/YouTube/TikTok se video link copy karein<br>
+            1. Instagram/YouTube/TikTok/Twitter/Facebook se video link copy karein<br>
             2. Yahan paste karein aur "Get Download Link" click karein<br>
-            3. Download button dikhega - click karne se video save ho jayega
+            3. Download button dikhega - click karne se video save ho jayega<br><br>
+            ✅ <strong>Working Platforms:</strong> Instagram Reels/Posts, YouTube Videos, Twitter/X Videos, TikTok, Facebook Videos
         </div>
     </div>
 
@@ -121,7 +131,7 @@
                 return;
             }
             
-            showStatus("⏳ Processing video (yt-dlp)...", "loading");
+            showStatus("⏳ Processing video link...", "loading");
             resultDiv.innerHTML = "";
             
             try {
@@ -135,14 +145,17 @@
                 console.log("Response:", data);
                 
                 if (data.success && data.video_url) {
-                    showStatus("✅ Video ready! Click below to download", "success");
+                    showStatus(`✅ ${data.platform || 'Video'} ready! Click below to download`, "success");
                     resultDiv.innerHTML = `
-                        <a href="${data.video_url}" target="_blank" class="download-btn" download>
-                            ⬇️ Download Video
-                        </a>
+                        <div style="text-align: center;">
+                            <a href="${data.video_url}" target="_blank" class="download-btn" download>
+                                ⬇️ Download Video
+                            </a>
+                            <div class="platform-badge">📱 Platform: ${data.platform || 'Social Media'}</div>
+                        </div>
                     `;
                 } else {
-                    showStatus("❌ " + (data.error || "Video link nahi mila"), "error");
+                    showStatus("❌ " + (data.error || "Video link nahi mila. Try different link."), "error");
                 }
                 
             } catch (err) {
