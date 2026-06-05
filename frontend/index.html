@@ -4,10 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All-in-One Downloader</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 20px; background-color: #f4f4f4; }
+        input { width: 80%; padding: 12px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; }
+        button { padding: 12px 25px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #result { margin-top: 20px; }
+    </style>
 </head>
 <body>
     <h2>Social Media Downloader</h2>
-    <input type="text" id="urlInput" placeholder="Video link paste karein...">
+    <input type="text" id="urlInput" placeholder="Video URL paste karein...">
     <button onclick="downloadVideo()">Get Video</button>
     <p id="status"></p>
     <div id="result"></div>
@@ -18,28 +24,27 @@
             const status = document.getElementById("status");
             const resultDiv = document.getElementById("result");
             
-            if(!url) { status.innerText = "Link daalo bhai!"; return; }
+            if(!url) { status.innerText = "Link daalo!"; return; }
             status.innerText = "Processing...";
+            resultDiv.innerHTML = "";
 
             try {
-                // Cobalt API ka direct endpoint (Bina kisi alag backend ke)
-                const response = await fetch("https://api.cobalt.tools/api/json", {
+                const response = await fetch("https://video-downloader-g5bz.onrender.com/download", {
                     method: "POST",
-                    headers: { 
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ url: url })
                 });
 
                 const data = await response.json();
                 
-                if (data.status === "picker" || data.url) {
-                    const link = data.url || data.picker[0].url;
+                // Cobalt API response handling
+                const link = data.url || (data.picker && data.picker[0].url);
+
+                if (link) {
                     status.innerText = "Success!";
-                    resultDiv.innerHTML = `<a href="${link}" target="_blank" style="font-size:20px;">Download Video</a>`;
+                    resultDiv.innerHTML = `<a href="${link}" target="_blank" style="font-size:20px; color:blue;">Download Karein</a>`;
                 } else {
-                    status.innerText = "Link nahi mila, kuch aur try karein.";
+                    status.innerText = "Link nahi mila, shayad URL galat hai.";
                 }
             } catch (err) {
                 status.innerText = "Error: " + err.message;
