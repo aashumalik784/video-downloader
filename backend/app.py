@@ -1,51 +1,41 @@
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import yt_dlp
 
 app = Flask(__name__)
-CORS(app)  # Cloudflare Pages se request allow karne ke liye
-
-@app.route('/')
-def home():
-    return jsonify({"status": "ok", "message": "Backend is running"})
+CORS(app)
 
 @app.route('/download', methods=['POST'])
 def download_video():
+    data = request.json
+    video_url = data.get('url')
+    
+    # RapidAPI Endpoint
+    url = "https://auto-download-all-in-one.p.rapidapi.com/v1/social/autolink"
+    
+    payload = {"url": video_url}
+    headers = {
+        "x-rapidapi-key": "
+curl --request POST \
+--url 
+https://auto-download-all-in-one.p.rapidapi.com/v1/social/autolink
+ \
+--header 'Content-Type: application/json' \
+--header 'x-rapidapi-host: auto-download-all-in-one.p.rapidapi.com' \
+--header 'x-rapidapi-key: 45ceb2f534msh34e98d782a09e76p11792ejsnd963d248c5c1' \
+--data '{"url":"
+https://www.tiktok.com/@yeuphimzz/video/7237370304337628442
+"}'", # Screenshot mein jo key hai wo yahan dalein
+        "x-rapidapi-host": "auto-download-all-in-one.p.rapidapi.com",
+        "Content-Type": "application/json"
+    }
+
     try:
-        data = request.get_json()
-        url = data.get('url')
-        
-        if not url:
-            return jsonify({"error": "URL is required"}), 400
-
-        # yt-dlp options - YouTube bot bypass + best quality
-        ydl_opts = {
-            'format': 'best[ext=mp4]/best',
-            'quiet': True,
-            'no_warnings': True,
-            'extractor_args': {
-                'youtube': {
-                    'player_client': ['android', 'web']
-                }
-            },
-            'http_headers': {
-                'User-Agent': 'com.google.android.youtube/17.31.35 (Linux; U; Android 11) gzip'
-            },
-        }
-
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-            video_url = info.get('url')
-            title = info.get('title', 'video')
-
-        return jsonify({
-            "success": True,
-            "download_url": video_url,
-            "title": title
-        })
-
+        response = requests.post(url, json=payload, headers=headers)
+        return jsonify(response.json())
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+    
