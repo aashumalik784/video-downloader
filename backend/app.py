@@ -10,22 +10,14 @@ def download_video():
     data = request.json
     video_url = data.get('url')
     
-    # RapidAPI Endpoint
+    if not video_url:
+        return jsonify({"error": "URL is required"}), 400
+    
     url = "https://auto-download-all-in-one.p.rapidapi.com/v1/social/autolink"
     
     payload = {"url": video_url}
     headers = {
-        "x-rapidapi-key": "
-curl --request POST \
---url 
-https://auto-download-all-in-one.p.rapidapi.com/v1/social/autolink
- \
---header 'Content-Type: application/json' \
---header 'x-rapidapi-host: auto-download-all-in-one.p.rapidapi.com' \
---header 'x-rapidapi-key: 45ceb2f534msh34e98d782a09e76p11792ejsnd963d248c5c1' \
---data '{"url":"
-https://www.tiktok.com/@yeuphimzz/video/7237370304337628442
-"}'", # Screenshot mein jo key hai wo yahan dalein
+        "x-rapidapi-key": "45ceb2f534msh34e98d782a09e76p11792ejsnd963d248c5c1",
         "x-rapidapi-host": "auto-download-all-in-one.p.rapidapi.com",
         "Content-Type": "application/json"
     }
