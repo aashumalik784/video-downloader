@@ -5,7 +5,7 @@
 </head>
 <body>
     <h2>Social Media Downloader</h2>
-    <input type="text" id="urlInput" placeholder="Paste URL (Insta, FB, TikTok, etc.)">
+    <input type="text" id="urlInput" placeholder="Paste URL here...">
     <button onclick="downloadVideo()">Get Video</button>
     <p id="status"></p>
     <div id="result"></div>
@@ -29,7 +29,7 @@
                 status.innerText = "Success!";
                 resultDiv.innerHTML = `<a href="${data.video_url}" target="_blank">Download Video</a>`;
             } catch (err) {
-                status.innerText = "Error: " + err.message;
+                status.innerText = "Error: Connection failed.";
             }
         }
     </script>
