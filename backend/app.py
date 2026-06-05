@@ -1,26 +1,46 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import requests
+import yt_dlp
+import tempfile
+import os
 import re
 
 app = Flask(__name__)
 CORS(app)
 
-def extract_video_url(data):
-    """Smart video URL extractor"""
-    if isinstance(data, dict):
-        direct_keys = ['video_url', 'url', 'download_url', 'link', 'hd', 'sd', 'video']
-        for key in direct_keys:
-            if key in data and data[key]:
-                return data[key]
-        
-        if 'result' in data and isinstance(data['result'], dict):
-            return extract_video_url(data['result'])
-        
-        if 'data' in data and isinstance(data['data'], dict):
-            return extract_video_url(data['data'])
+def get_video_direct_url(video_url):
+    """yt-dlp se direct video URL extract karega - BINA DOWNLOAD KARE"""
+    ydl_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'extract_flat': False,
+        'format': 'best[ext=mp4]/best',  # Best quality MP4
+    }
     
-    return None
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(video_url, download=False)
+            
+            # Direct video URL dhundho
+            if 'url' in info:
+                return info['url']
+            
+            if 'entries' in info and info['entries']:
+                for entry in info['entries']:
+                    if entry and 'url' in entry:
+                        return entry['url']
+            
+            if 'formats' in info:
+                # Sabse high quality wala format lelo
+                for f in info['formats']:
+                    if f.get('ext') == 'mp4' and f.get('acodec') != 'none':
+                        return f['url']
+            
+            return None
+            
+    except Exception as e:
+        print(f"yt-dlp error: {e}")
+        return None
 
 @app.route('/download', methods=['POST'])
 def download():
@@ -29,69 +49,34 @@ def download():
     if not video_url:
         return jsonify({"error": "URL do bhai"}), 400
     
-    # Multiple API endpoints with fallback
-    apis = [
-        {
-            "url": "https://instagram-video-downloader-download-instagram-videos-stories1.p.rapidapi.com/get",
-            "headers": {
-                "x-rapidapi-key": "45ceb2f534msh34e98d782a09e76p11792ejsnd963d248c5c1",
-                "x-rapidapi-host": "instagram-video-downloader-download-instagram-videos-stories1.p.rapidapi.com"
-            },
-            "params": {"url": video_url}
-        },
-        {
-            "url": "https://instagram-downloader-download-instagram-videos-stories.p.rapidapi.com/convert",
-            "headers": {
-                "x-rapidapi-key": "45ceb2f534msh34e98d782a09e76p11792ejsnd963d248c5c1",
-                "x-rapidapi-host": "instagram-downloader-download-instagram-videos-stories.p.rapidapi.com"
-            },
-            "params": {"url": video_url}
-        }
-    ]
+    # Platform validation
+    supported = ['instagram.com', 'youtube.com', 'youtu.be', 'tiktok.com', 
+                 'twitter.com', 'x.com', 'facebook.com', 'fb.com']
     
-    # Try each API
-    for api in apis:
-        try:
-            response = requests.get(api["url"], headers=api["headers"], params=api["params"], timeout=15)
-            data = response.json()
-            
-            video_link = extract_video_url(data)
-            if video_link:
-                return jsonify({
-                    "success": True,
-                    "video_url": video_link,
-                    "source": "RapidAPI"
-                })
-        except:
-            continue
+    if not any(platform in video_url.lower() for platform in supported):
+        return jsonify({"error": "Yeh platform support nahi hai", "supported": supported}), 400
     
-    # Fallback: Direct video extraction using yt-dlp like service
     try:
-        # Using a free public API as last resort
-        fallback_url = f"https://p.oceansaver.in/ajax/download.php?url={video_url}"
-        response = requests.get(fallback_url, timeout=10)
-        if response.status_code == 200:
-            # Extract video link from response
-            match = re.search(r'(https?://[^\s"\'<>]+\.(mp4|mov|avi|mkv))', response.text)
-            if match:
-                return jsonify({
-                    "success": True,
-                    "video_url": match.group(1),
-                    "source": "Fallback"
-                })
-    except:
-        pass
-    
-    return jsonify({
-        "success": False,
-        "error": "Video link nahi mila. API subscription required.",
-        "solution": "RapidAPI par free subscribe karein: https://rapidapi.com/",
-        "full_response": {"message": "Subscription required"}
-    }), 404
+        video_direct_url = get_video_direct_url(video_url)
+        
+        if video_direct_url:
+            return jsonify({
+                "success": True,
+                "video_url": video_direct_url,
+                "message": "Video ready! Click download button."
+            })
+        else:
+            return jsonify({
+                "success": False, 
+                "error": "Video link extract nahi ho paya. URL check kar le."
+            }), 404
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/')
 def home():
-    return "✅ Social Media Downloader Active! Use /download endpoint"
+    return "✅ Social Media Downloader Active! Free yt-dlp version"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
