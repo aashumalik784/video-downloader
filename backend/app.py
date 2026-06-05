@@ -1,9 +1,14 @@
-import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import requests
 
 app = Flask(__name__)
 CORS(app)
+
+# Root route taaki browser mein "Not Found" na aaye
+@app.route('/')
+def home():
+    return jsonify({"message": "Backend is running! Use /download endpoint."})
 
 @app.route('/download', methods=['POST'])
 def download_video():
