@@ -6,127 +6,24 @@
     <title>📥 Social Media Video Downloader</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 650px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        h1 { color: #333; margin-bottom: 10px; }
-        .subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
-        .badge {
-            display: inline-block;
-            background: #28a745;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
-        input {
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:active { transform: scale(0.98); }
-        .status {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .status.loading { background: #f0f0f0; color: #666; }
-        .status.success { background: #d4edda; color: #155724; }
-        .status.error { background: #f8d7da; color: #721c24; }
-        .download-btn {
-            display: inline-block;
-            padding: 15px 30px;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            margin-top: 15px;
-            font-weight: bold;
-            font-size: 18px;
-        }
-        .platform-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            background: #e7f3ff;
-            color: #004085;
-            border-radius: 5px;
-            font-size: 12px;
-            margin-top: 10px;
-        }
-        .info {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e7f3ff;
-            border-radius: 10px;
-            font-size: 13px;
-            color: #004085;
-        }
-        .tip {
-            margin-top: 10px;
-            padding: 10px;
-            background: #fff3cd;
-            border-radius: 8px;
-            font-size: 12px;
-            color: #856404;
-        }
+        body { font-family: sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; padding: 40px; max-width: 650px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        input { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #e0e0e0; border-radius: 10px; }
+        button { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .status { margin-top: 20px; padding: 12px; border-radius: 10px; text-align: center; }
+        .loading { background: #f0f0f0; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .download-btn { display: inline-block; padding: 15px 30px; background: #28a745; color: white; text-decoration: none; border-radius: 10px; margin-top: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="badge">✨ 100% FREE • NO API KEY • INSTAGRAM WORKING</div>
         <h1>📥 Social Media Downloader</h1>
-        <div class="subtitle">Instagram • YouTube • Twitter • TikTok • Facebook</div>
-        
-        <input type="text" id="urlInput" placeholder="Paste video link here...">
+        <input type="text" id="urlInput" placeholder="Paste link here...">
         <button onclick="downloadVideo()">✨ Get Download Link</button>
-        
-        <div id="status"></div>
+        <div id="status" class="status" style="display:none;"></div>
         <div id="result"></div>
-        
-        <div class="info">
-            💡 <strong>Kaise use karein:</strong><br>
-            1. Instagram/YouTube/TikTok/Twitter/Facebook se video link copy karein<br>
-            2. Yahan paste karein aur "Get Download Link" click karein<br>
-            3. Download button dikhega - click karne se video save ho jayega
-        </div>
-        <div class="tip">
-            🔥 <strong>Instagram Tips:</strong> Public account ki video daalein. Reels, Posts, IGTV sab kaam karega.<br>
-            📌 Example: https://www.instagram.com/reel/C7aKqx1S2Fd/
-        </div>
     </div>
 
     <script>
@@ -137,55 +34,32 @@
             const statusDiv = document.getElementById("status");
             const resultDiv = document.getElementById("result");
             
-            if(!url) {
-                showStatus("⚠️ Please paste a video link!", "error");
-                return;
-            }
-            
-            showStatus("⏳ Processing video link...", "loading");
-            resultDiv.innerHTML = "";
+            if(!url) { showStatus("Please paste a link!", "error"); return; }
+            showStatus("⏳ Processing...", "loading");
             
             try {
-                const response = await fetch(`${BACKEND_URL}/download`, {
+                const res = await fetch(`${BACKEND_URL}/download`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ url: url })
                 });
+                const data = await res.json();
                 
-                const data = await response.json();
-                console.log("Response:", data);
-                
-                if (data.success && data.video_url) {
-                    showStatus(`✅ ${data.platform || 'Video'} ready! Click below to download`, "success");
-                    resultDiv.innerHTML = `
-                        <div style="text-align: center;">
-                            <a href="${data.video_url}" target="_blank" class="download-btn" download>
-                                ⬇️ Download Video
-                            </a>
-                            <div class="platform-badge">📱 Platform: ${data.platform || 'Social Media'}</div>
-                        </div>
-                    `;
+                if (data.success) {
+                    showStatus("✅ Ready!", "success");
+                    resultDiv.innerHTML = `<a href="${data.video_url}" target="_blank" class="download-btn">⬇️ Download Video</a>`;
                 } else {
-                    showStatus("❌ " + (data.error || "Video link nahi mila"), "error");
-                    if(data.tip) {
-                        resultDiv.innerHTML = `<div class="tip">💡 ${data.tip}</div>`;
-                    }
+                    showStatus("❌ " + data.error, "error");
                 }
-                
-            } catch (err) {
-                showStatus("❌ Error: " + err.message, "error");
-            }
+            } catch (err) { showStatus("❌ Error: " + err.message, "error"); }
         }
         
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById("status");
-            statusDiv.innerHTML = message;
-            statusDiv.className = "status " + type;
+        function showStatus(msg, type) {
+            const s = document.getElementById("status");
+            s.style.display = "block";
+            s.innerText = msg;
+            s.className = "status " + type;
         }
-        
-        document.getElementById("urlInput").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") downloadVideo();
-        });
     </script>
 </body>
 </html>
