@@ -2,55 +2,230 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>All-in-One Downloader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Social Media Video Downloader</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; }
-        input { width: 80%; padding: 10px; margin-bottom: 10px; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; }
-        #result { margin-top: 20px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .status.loading {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .result {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 18px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        .download-btn:hover {
+            background: #218838;
+        }
+        
+        .debug {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 12px;
+            overflow-x: auto;
+            display: none;
+        }
+        
+        .debug.show {
+            display: block;
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
-    <h2>Social Media Downloader</h2>
-    <input type="text" id="urlInput" placeholder="Video URL yahan paste karein...">
-    <button onclick="downloadVideo()">Get Video</button>
-    <p id="status"></p>
-    <div id="result"></div>
+    <div class="container">
+        <h1>📥 Social Media Downloader</h1>
+        <div class="subtitle">Instagram • YouTube • Facebook • Twitter • TikTok</div>
+        
+        <input type="text" id="urlInput" placeholder="Paste video link here...">
+        <button onclick="downloadVideo()">✨ Download Video</button>
+        
+        <div id="status"></div>
+        <div id="result"></div>
+        
+        <button onclick="toggleDebug()" style="background: #6c757d; margin-top: 10px;">🐛 Debug Info</button>
+        <div id="debug" class="debug"></div>
+    </div>
 
     <script>
         async function downloadVideo() {
-            const url = document.getElementById("urlInput").value;
-            const status = document.getElementById("status");
+            const url = document.getElementById("urlInput").value.trim();
+            const statusDiv = document.getElementById("status");
             const resultDiv = document.getElementById("result");
+            const debugDiv = document.getElementById("debug");
             
-            if(!url) { status.innerText = "Link daalo!"; return; }
-            status.innerText = "Processing...";
+            if(!url) {
+                showStatus("⚠️ Please paste a video link!", "error");
+                return;
+            }
+            
+            showStatus("⏳ Processing your video...", "loading");
             resultDiv.innerHTML = "";
-
+            debugDiv.innerHTML = "";
+            debugDiv.classList.remove("show");
+            
             try {
                 const response = await fetch("https://video-downloader-g5bz.onrender.com/download", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ url: url })
                 });
-
+                
                 const data = await response.json();
-                console.log("Response:", data);
-
-                // RapidAPI ke naye structure ke hisaab se link dhoondna
-                const videoLink = data.video_url || data.url || (data.result && data.result.url);
-
-                if (videoLink) {
-                    status.innerText = "Success!";
-                    resultDiv.innerHTML = `<a href="${videoLink}" target="_blank" style="font-size:18px;">Click Here to Download</a>`;
-                } else {
-                    status.innerText = "Link nahi mila!";
-                    resultDiv.innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+                console.log("Full Response:", data);
+                
+                // Debug ke liye full response store
+                debugDiv.innerHTML = "<strong>🔍 API Response:</strong><pre>" + JSON.stringify(data, null, 2) + "</pre>";
+                
+                if (data.success && data.video_url) {
+                    showStatus("✅ Video ready! Click below to download", "success");
+                    resultDiv.innerHTML = `
+                        <a href="${data.video_url}" target="_blank" class="download-btn" download>
+                            ⬇️ Download Video
+                        </a>
+                    `;
+                } 
+                else if (data.video_url) {
+                    showStatus("✅ Video ready!", "success");
+                    resultDiv.innerHTML = `
+                        <a href="${data.video_url}" target="_blank" class="download-btn">
+                            ⬇️ Download Video
+                        </a>
+                    `;
                 }
+                else {
+                    showStatus("❌ Could not extract video link. Check Debug Info below", "error");
+                    debugDiv.classList.add("show");
+                }
+                
             } catch (err) {
-                status.innerText = "Error: " + err.message;
+                showStatus("❌ Network Error: " + err.message, "error");
+                debugDiv.innerHTML = "<strong>Error:</strong> " + err.message;
+                debugDiv.classList.add("show");
             }
         }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById("status");
+            statusDiv.innerHTML = message;
+            statusDiv.className = "status " + type;
+        }
+        
+        function toggleDebug() {
+            const debugDiv = document.getElementById("debug");
+            debugDiv.classList.toggle("show");
+        }
+        
+        // Enter key support
+        document.getElementById("urlInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") downloadVideo();
+        });
     </script>
 </body>
-</html>
+    </html>
