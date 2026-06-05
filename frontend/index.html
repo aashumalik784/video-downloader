@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📥 Social Media Video Downloader - Free</title>
+    <title>📥 Social Media Video Downloader</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -95,11 +95,19 @@
             font-size: 13px;
             color: #004085;
         }
+        .tip {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #856404;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="badge">✨ 100% FREE • NO API KEY • NO SUBSCRIPTION</div>
+        <div class="badge">✨ 100% FREE • NO API KEY • INSTAGRAM WORKING</div>
         <h1>📥 Social Media Downloader</h1>
         <div class="subtitle">Instagram • YouTube • Twitter • TikTok • Facebook</div>
         
@@ -113,8 +121,11 @@
             💡 <strong>Kaise use karein:</strong><br>
             1. Instagram/YouTube/TikTok/Twitter/Facebook se video link copy karein<br>
             2. Yahan paste karein aur "Get Download Link" click karein<br>
-            3. Download button dikhega - click karne se video save ho jayega<br><br>
-            ✅ <strong>Working Platforms:</strong> Instagram Reels/Posts, YouTube Videos, Twitter/X Videos, TikTok, Facebook Videos
+            3. Download button dikhega - click karne se video save ho jayega
+        </div>
+        <div class="tip">
+            🔥 <strong>Instagram Tips:</strong> Public account ki video daalein. Reels, Posts, IGTV sab kaam karega.<br>
+            📌 Example: https://www.instagram.com/reel/C7aKqx1S2Fd/
         </div>
     </div>
 
@@ -155,7 +166,10 @@
                         </div>
                     `;
                 } else {
-                    showStatus("❌ " + (data.error || "Video link nahi mila. Try different link."), "error");
+                    showStatus("❌ " + (data.error || "Video link nahi mila"), "error");
+                    if(data.tip) {
+                        resultDiv.innerHTML = `<div class="tip">💡 ${data.tip}</div>`;
+                    }
                 }
                 
             } catch (err) {
