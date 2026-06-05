@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📥 Social Media Video Downloader</title>
+    <title>📥 Social Media Video Downloader - Free</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -25,6 +25,15 @@
         }
         h1 { color: #333; margin-bottom: 10px; }
         .subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
+        .badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
         input {
             width: 100%;
             padding: 15px;
@@ -32,6 +41,10 @@
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             margin-bottom: 15px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
         }
         button {
             width: 100%;
@@ -44,6 +57,7 @@
             cursor: pointer;
             font-weight: bold;
         }
+        button:active { transform: scale(0.98); }
         .status {
             margin-top: 20px;
             padding: 12px;
@@ -55,73 +69,60 @@
         .status.error { background: #f8d7da; color: #721c24; }
         .download-btn {
             display: inline-block;
-            padding: 12px 24px;
+            padding: 15px 30px;
             background: #28a745;
             color: white;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-top: 15px;
+            font-weight: bold;
+            font-size: 18px;
         }
-        .debug {
+        .info {
             margin-top: 20px;
             padding: 15px;
-            background: #f8f9fa;
+            background: #e7f3ff;
             border-radius: 10px;
-            font-size: 12px;
-            display: none;
-            overflow-x: auto;
-        }
-        .debug.show { display: block; }
-        pre { white-space: pre-wrap; word-wrap: break-word; }
-        .note {
-            margin-top: 20px;
-            padding: 10px;
-            background: #fff3cd;
-            border-radius: 8px;
-            font-size: 12px;
-            color: #856404;
+            font-size: 13px;
+            color: #004085;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="badge">✨ 100% FREE • NO API KEY NEEDED</div>
         <h1>📥 Social Media Downloader</h1>
         <div class="subtitle">Instagram • YouTube • Facebook • Twitter • TikTok</div>
         
         <input type="text" id="urlInput" placeholder="Paste video link here...">
-        <button onclick="downloadVideo()">✨ Download Video</button>
+        <button onclick="downloadVideo()">✨ Get Download Link</button>
         
         <div id="status"></div>
         <div id="result"></div>
         
-        <button onclick="toggleDebug()" style="background: #6c757d; margin-top: 10px;">🐛 Debug Info</button>
-        <div id="debug" class="debug"></div>
-        
-        <div class="note">
-            💡 <strong>Note:</strong> Agar download kaam nahi kar raha, toh RapidAPI par free subscribe karein:<br>
-            <a href="https://rapidapi.com/" target="_blank">rapidapi.com</a> → Search "instagram downloader" → Subscribe (Free)
+        <div class="info">
+            💡 <strong>Kaise use karein:</strong><br>
+            1. Instagram/YouTube/TikTok se video link copy karein<br>
+            2. Yahan paste karein aur "Get Download Link" click karein<br>
+            3. Download button dikhega - click karne se video save ho jayega
         </div>
     </div>
 
     <script>
-        // ⚠️ IMPORTANT: Yahan apna Render backend URL daalein
         const BACKEND_URL = "https://video-downloader-g5bz.onrender.com";
         
         async function downloadVideo() {
             const url = document.getElementById("urlInput").value.trim();
             const statusDiv = document.getElementById("status");
             const resultDiv = document.getElementById("result");
-            const debugDiv = document.getElementById("debug");
             
             if(!url) {
                 showStatus("⚠️ Please paste a video link!", "error");
                 return;
             }
             
-            showStatus("⏳ Processing...", "loading");
+            showStatus("⏳ Processing video (yt-dlp)...", "loading");
             resultDiv.innerHTML = "";
-            debugDiv.innerHTML = "";
-            debugDiv.classList.remove("show");
             
             try {
                 const response = await fetch(`${BACKEND_URL}/download`, {
@@ -133,29 +134,19 @@
                 const data = await response.json();
                 console.log("Response:", data);
                 
-                debugDiv.innerHTML = "<strong>🔍 Full Response:</strong><pre>" + JSON.stringify(data, null, 2) + "</pre>";
-                
                 if (data.success && data.video_url) {
-                    showStatus("✅ Video ready! Click to download", "success");
+                    showStatus("✅ Video ready! Click below to download", "success");
                     resultDiv.innerHTML = `
                         <a href="${data.video_url}" target="_blank" class="download-btn" download>
-                            ⬇️ Download Video (${data.source || 'API'})
+                            ⬇️ Download Video
                         </a>
                     `;
-                } 
-                else if (data.video_url) {
-                    showStatus("✅ Success!", "success");
-                    resultDiv.innerHTML = `<a href="${data.video_url}" target="_blank" class="download-btn">⬇️ Download</a>`;
-                }
-                else {
+                } else {
                     showStatus("❌ " + (data.error || "Video link nahi mila"), "error");
-                    debugDiv.classList.add("show");
                 }
                 
             } catch (err) {
-                showStatus("❌ Network Error: " + err.message, "error");
-                debugDiv.innerHTML = "<strong>Error:</strong> " + err.message + "<br><br>Check if backend is running!";
-                debugDiv.classList.add("show");
+                showStatus("❌ Error: " + err.message, "error");
             }
         }
         
@@ -165,11 +156,6 @@
             statusDiv.className = "status " + type;
         }
         
-        function toggleDebug() {
-            document.getElementById("debug").classList.toggle("show");
-        }
-        
-        // Enter key support
         document.getElementById("urlInput").addEventListener("keypress", function(e) {
             if (e.key === "Enter") downloadVideo();
         });
